@@ -26,21 +26,26 @@ fi
 function parallel {
     local time1=$(date +"%H:%M:%S")
     local time2=""
-    
-    echo "starting $@ ($time1)..."
-    "$@" && time2=$(date +"%H:%M:%S") && echo "finishing $@ ($time1 -- $time2)..." &
-    
+    local last_pid=""
+
     local children=$(ps -eo ppid | grep -w $my_pid | wc -l)
     children=$((children-1))
 
+    echo "$children of $max_children processes running..."
+
     while [[ $children -ge $max_children ]]; do
-        echo "$children of $max_children processes running, wait..."
+        echo "wait..."
         wait -n
-        sleep 1
 
         children=$(ps -eo ppid | grep -w $my_pid | wc -l)
         children=$((children-1))
     done
+
+    echo "starting $@ ($time1)..."
+    "$@" && time2=$(date +"%H:%M:%S") && echo "finishing $@ ($time1 -- $time2)..." &
+
+    last_pid=$!
+    echo "started with pid: $last_pid"
 }
 
 my_pid=$$
@@ -49,7 +54,6 @@ echo "my pid: $my_pid"
 while [ "$(date -d "$start_date" +%Y%m%d)" -lt "$(date -d "$end_date" +%Y%m%d)" ]; do
     printf -v exec_command "$command" "$start_date" "$(date -I -d "$start_date + 1 day")"
     parallel $exec_command
-    sleep 1
     start_date=$(date -I -d "$start_date + 1 day")
 done
 
