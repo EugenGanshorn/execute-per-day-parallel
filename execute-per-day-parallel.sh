@@ -35,7 +35,7 @@ function parallel {
 
     while [[ $children -ge $max_children ]]; do
         echo "wait..."
-        wait -n
+        wait -n 2>/dev/null || sleep 1
 
         children=$(ps -eo ppid | grep -w $my_pid | wc -l)
         children=$((children-1))
