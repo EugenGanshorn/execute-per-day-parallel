@@ -57,7 +57,7 @@ function parallel {
 echo "my pid: $my_pid"
 
 while [ "$(date -d "$start_date" +%Y%m%d)" -lt "$(date -d "$end_date" +%Y%m%d)" ]; do
-    printf -v exec_command "$command" "$start_date" "$(date -I -d "$start_date + 1 day")"
+    printf -v exec_command "ionice -c3 $command" "$start_date" "$(date -I -d "$start_date + 1 day")"
     parallel $exec_command
     start_date=$(date -I -d "$start_date + 1 day")
 
